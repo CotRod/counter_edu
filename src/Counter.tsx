@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import styles from './counter.module.css';
 import { getRandom } from './utils/getRandom';
 import { fetchData } from './utils/fetchData';
+import { EActionTypes } from './types';
+import { initialValue, reducer } from './store/reducer';
 
-const initialValue = 0;
 function Counter() {
-  const [value, setValue] = useState(initialValue);
+  const [state, dispatch] = useReducer(reducer, initialValue);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect( () => {
     const getData = async () => {
-      setValue(await fetchData());
+      dispatch({ type: EActionTypes.RANDOM_ASYNC, payload: await fetchData() });
       setIsLoading(false);
     }
     if (isLoading) {
@@ -19,21 +20,13 @@ function Counter() {
 
   }, [isLoading])
 
-  const onIncrement = () => {
-    setValue((value) => value + 1);
-  }
+  const onIncrement = () => dispatch({type: EActionTypes.INCREMENT});
 
-  const onDecrement = () => {
-    setValue((value) => value - 1);
-  }
+  const onDecrement = () => dispatch({type: EActionTypes.DECREMENT});
 
-  const onRandom = () => {
-    setValue(getRandom());
-  }
+  const onRandom = () => dispatch({ type: EActionTypes.RANDOM, payload: getRandom() });
 
-  const onReset = () => {
-    setValue(initialValue);
-  }
+  const onReset = () => dispatch({ type: EActionTypes.RESET});
 
   const onAsyncRandomClick = async () => {
     setIsLoading(true);
@@ -41,7 +34,7 @@ function Counter() {
 
   return (
     <div className={styles.wrapper}>
-      <div><span className={styles.value}>{isLoading ? 'loading' : value}</span></div>
+      <div><span className={styles.value}>{isLoading ? 'loading' : state}</span></div>
       <div className={styles.buttons}>
         <button onClick={onIncrement}>increment</button>
         <button onClick={onDecrement}>decrement</button>
